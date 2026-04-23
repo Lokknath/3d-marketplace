@@ -1,0 +1,13 @@
+.File {
+  /* width: 100vw; */
+  height: auto;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-left: 300px;
+}
+
+img {
+  width: 300px;
+  margin: 10px;
+}

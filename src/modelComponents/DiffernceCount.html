@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Excel Power Query & Dynamic Charts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals (Slate, Sky Blue, White) -->
+    <!-- Application Structure Plan: A two-column, step-by-step interactive tutorial. Left column provides text instructions, right column provides animated visual demonstrations of the Excel UI. This structure is chosen to guide the user through a procedural task, reinforcing learning with both text and visuals. Navigation is linear (Next/Prev) with a header for jumping between the two main parts. -->
+    <!-- Visualization & Content Choices: Report Info (Excel Steps) -> Goal (Teach a process) -> Viz/Presentation (Text + Animated HTML/CSS UI mockups) -> Interaction (Step navigation, final interactive chart) -> Justification (Visual simulation enhances understanding of a software process better than static images) -> Library/Method (HTML/CSS/JS for animations, Chart.js for the final interactive chart). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .step-content {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .step-content.hidden {
+            opacity: 0;
+        }
+        .mock-excel-window {
+            border: 1px solid #e2e8f0; /* slate-200 */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            height: 450px;
+        }
+        .slicer-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .slicer-btn.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+            border-color: #0284c7;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Interactive Guide to Power Query</h1>
+            <p class="text-slate-600 mt-2 max-w-3xl mx-auto">An interactive walkthrough to combine data from multiple sheets and create dynamic charts in Excel.</p>
+        </header>
+
+        <main class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
+            <div id="tutorial-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Left Column: Instructions -->
+                <div class="flex flex-col">
+                    <div id="step-header" class="mb-4">
+                        <h2 class="text-2xl font-bold text-sky-700" id="step-title"></h2>
+                        <p class="text-sm text-slate-500" id="step-counter"></p>
+                    </div>
+                    <div id="step-instructions" class="text-slate-700 space-y-4 flex-grow">
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-slate-200 flex justify-between items-center">
+                        <button id="prev-btn" class="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                        <button id="next-btn" class="px-6 py-2 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition">Next</button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Visual Demonstration -->
+                <div id="visual-demo" class="mock-excel-window bg-slate-100 rounded-lg flex items-center justify-center p-4 overflow-hidden">
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-8 text-sm text-slate-500">
+            <p>Built to demonstrate the steps from the "Complete Guide: Combine Data & Create Dynamic Charts".</p>
+        </footer>
+    </div>
+
+    <script>
+        const steps = [
+            {
+                title: "Introduction",
+                instructions: `
+                    <p>Welcome! This guide will walk you through combining data from multiple Excel sheets and creating a dynamic, filterable chart.</p>
+                    <p class="font-semibold">The Goal:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Combine sales data from sheets like 'Jan_Sales', 'Feb_Sales', etc.</li>
+                        <li>Summarize the data to get total counts and revenue per item.</li>
+                        <li>Create an interactive chart that can be filtered by month.</li>
+                    </ul>
+                    <p class="mt-4">Click "Next" to begin with Part 1.</p>
+                `,
+                visual: () => `<div class="text-center p-4">
+                                <h3 class="text-2xl font-bold text-slate-700">Let's Get Started!</h3>
+                                <p class="text-slate-500 mt-2">The right side of the screen will show you a visual representation of each step.</p>
+                                <div class="mt-6 flex justify-center gap-4 text-xs">
+                                    <div class="p-2 border rounded bg-white w-24"><b>Jan_Sales</b><br>Laptops: 10</div>
+                                    <div class="p-2 border rounded bg-white w-24"><b>Feb_Sales</b><br>Monitors: 15</div>
+                                    <div class="p-2 border rounded bg-white w-24"><b>Mar_Sales</b><br>Laptops: 5</div>
+                                </div>
+                                <div class="mt-4 text-2xl font-bold text-slate-400">➔</div>
+                                <div class="mt-4 p-4 border rounded bg-green-100 text-green-800"><b>Combined Report & Chart</b></div>
+                             </div>`
+            },
+            {
+                title: "Step 1: Get Data From Your File",
+                instructions: `
+                    <p>First, we need to tell Excel where to find the source data. This is done through the Power Query editor.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>Open a new, blank Excel workbook.</li>
+                        <li>On the ribbon, navigate to the <strong>Data</strong> tab.</li>
+                        <li>Click <strong>Get Data > From File > From Workbook</strong>.</li>
+                        <li>In the Navigator window, check <strong>Select multiple items</strong> and tick the boxes for each of your data sheets.</li>
+                        <li>Click the <strong>Transform Data</strong> button to open the Power Query Editor.</li>
+                    </ol>
+                `,
+                visual: () => `<div class="w-full h-full bg-white p-4 flex flex-col">
+                                <div class="bg-slate-200 p-2 rounded-t-md text-sm font-semibold text-slate-600">Excel Ribbon</div>
+                                <div class="flex-grow border-x border-b border-slate-300 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <p class="font-bold text-lg">Data ➔ Get Data ➔ From File</p>
+                                        <div class="mt-4 p-4 border-2 border-dashed border-sky-400 rounded-lg bg-sky-50">
+                                            <p class="font-semibold">Navigator Window</p>
+                                            <ul class="text-left mt-2 text-sm">
+                                                <li><input type="checkbox" checked disabled> Jan_Sales</li>
+                                                <li><input type="checkbox" checked disabled> Feb_Sales</li>
+                                                <li><input type="checkbox" checked disabled> Mar_Sales</li>
+                                            </ul>
+                                            <button class="mt-4 w-full bg-sky-600 text-white py-1 rounded">Transform Data</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`
+            },
+            {
+                title: "Step 2: Add a 'Month' Column",
+                instructions: `
+                    <p>To filter by month later, we need to "tag" each row of data with the name of the sheet it came from. This is done for each sheet's query individually.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>In the Power Query Editor, select your first query (e.g., 'Jan_Sales').</li>
+                        <li>Go to the <strong>Add Column</strong> tab and click <strong>Custom Column</strong>.</li>
+                        <li>Name the new column <strong>Month</strong>.</li>
+                        <li>In the formula box, type the name of the current query in quotes (e.g., <code>"Jan_Sales"</code>).</li>
+                        <li>Repeat this for every source query.</li>
+                    </ol>
+                `,
+                visual: () => `<div class="w-full h-full bg-white p-4 flex flex-col text-sm">
+                                <div class="bg-slate-200 p-2 rounded-t-md text-slate-600"><b>Power Query Editor</b>: Jan_Sales</div>
+                                <div class="flex-grow border-x border-b border-slate-300 p-2">
+                                    <p class="mb-2">Clicking <b>Add Column > Custom Column</b> opens this dialog:</p>
+                                    <div class="p-4 border rounded bg-slate-50 shadow-md">
+                                        <p>New column name: <input type="text" value="Month" class="border p-1 rounded w-full" disabled></p>
+                                        <p class="mt-2">Custom column formula:</p>
+                                        <div class="p-2 bg-slate-200 rounded font-mono mt-1">="Jan_Sales"</div>
+                                    </div>
+                                    <p class="mt-4 font-semibold">Result:</p>
+                                    <table class="w-full mt-1 border-collapse">
+                                        <thead><tr class="bg-slate-100"><th class="border p-1">Item</th><th class="border p-1">Count</th><th class="border p-1 bg-sky-100">Month</th></tr></thead>
+                                        <tbody><tr><td class="border p-1">Laptops</td><td class="border p-1">10</td><td class="border p-1 bg-sky-100">Jan_Sales</td></tr></tbody>
+                                    </table>
+                                </div>
+                            </div>`
+            },
+            {
+                title: "Step 3: Combine All Data",
+                instructions: `
+                    <p>Now we stack all of our prepared queries (which now include the 'Month' column) into a single master list.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>On the <strong>Home</strong> tab, click the dropdown arrow on <strong>Append Queries</strong>.</li>
+                        <li>Select <strong>Append Queries as New</strong>.</li>
+                        <li>In the window, add all of your source queries to the "Tables to append" list.</li>
+                        <li>Click <strong>OK</strong>. A new query (e.g., 'Append1') is created.</li>
+                    </ol>
+                `,
+                visual: () => `<div class="w-full h-full bg-white p-4 flex items-center justify-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="space-y-2">
+                                        <div class="p-2 border rounded bg-white w-32"><b>Jan_Sales</b><br>Laptops (Jan_Sales)</div>
+                                        <div class="p-2 border rounded bg-white w-32"><b>Feb_Sales</b><br>Monitors (Feb_Sales)</div>
+                                        <div class="p-2 border rounded bg-white w-32"><b>Mar_Sales</b><br>Laptops (Mar_Sales)</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-slate-400">➔</div>
+                                        <p class="text-xs font-semibold text-sky-600">Append</p>
+                                        <div class="text-2xl font-bold text-slate-400">➔</div>
+                                    </div>
+                                    <div class="p-2 border rounded bg-green-100 text-green-800 w-40">
+                                        <b class="text-base">Append1</b>
+                                        <div class="bg-white p-1 mt-1 rounded text-xs">Laptops (Jan_Sales)</div>
+                                        <div class="bg-white p-1 mt-1 rounded text-xs">Monitors (Jan_Sales)</div>
+                                        <div class="bg-white p-1 mt-1 rounded text-xs">Monitors (Feb_Sales)</div>
+                                        <div class="bg-white p-1 mt-1 rounded text-xs">...and so on</div>
+                                    </div>
+                                </div>
+                            </div>`
+            },
+            {
+                title: "Step 4: Group and Summarize",
+                instructions: `
+                    <p>This is where the magic happens. We group the combined data by both month and item to get detailed subtotals.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>Select your new 'Append1' query.</li>
+                        <li>Click the <strong>Group By</strong> button on the <strong>Home</strong> tab.</li>
+                        <li>Select the <strong>Advanced</strong> option.</li>
+                        <li>Set up grouping: first by <strong>Month</strong>, then by <strong>Item</strong>.</li>
+                        <li>Set up aggregations: Sum the <strong>Count</strong> and <strong>Total</strong> columns.</li>
+                    </ol>
+                `,
+                visual: () => `<div class="w-full h-full bg-white p-4 flex flex-col text-sm">
+                                <div class="bg-slate-200 p-2 rounded-t-md text-slate-600"><b>Power Query Editor</b>: Group By</div>
+                                <div class="flex-grow border-x border-b border-slate-300 p-2">
+                                    <div class="p-4 border rounded bg-slate-50 shadow-md">
+                                        <p class="font-semibold">Group by:</p>
+                                        <div class="p-1 bg-slate-200 rounded mt-1">Month</div>
+                                        <div class="p-1 bg-slate-200 rounded mt-1">Item</div>
+                                        <p class="font-semibold mt-2">New columns:</p>
+                                        <div class="p-1 bg-slate-200 rounded mt-1">Total Count = Sum of Count</div>
+                                        <div class="p-1 bg-slate-200 rounded mt-1">Grand Total = Sum of Total</div>
+                                    </div>
+                                    <p class="mt-4 font-semibold">Result:</p>
+                                    <table class="w-full mt-1 border-collapse">
+                                        <thead><tr class="bg-slate-100"><th class="border p-1">Month</th><th class="border p-1">Item</th><th class="border p-1">Total Count</th></tr></thead>
+                                        <tbody><tr><td class="border p-1">Jan_Sales</td><td class="border p-1">Laptops</td><td class="border p-1">10</td></tr></tbody>
+                                    </table>
+                                </div>
+                            </div>`
+            },
+            {
+                title: "Step 5: Load to Excel",
+                instructions: `
+                    <p>With the data fully prepared, the final step in Power Query is to load it back into your Excel sheet.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>Calculate a final 'Avg Unit Price' column using the Custom Column feature (<code>=[Grand Total] / [Total Count]</code>).</li>
+                        <li>Go to the <strong>Home</strong> tab.</li>
+                        <li>Click the big <strong>Close & Load</strong> button.</li>
+                    </ol>
+                    <p class="mt-4">This will create a new sheet in your workbook containing the final, detailed summary table, ready for Part 2.</p>
+                `,
+                visual: () => `<div class="text-center p-4">
+                                <h3 class="text-xl font-bold text-slate-700">Power Query Complete!</h3>
+                                <div class="text-4xl my-4">🎉</div>
+                                <p class="text-slate-500 mt-2">The data is now structured and loaded into an Excel table.</p>
+                                <div class="mt-6 p-2 border rounded bg-green-100 text-green-800 text-sm">
+                                    <p><b>Ready for Part 2:</b></p>
+                                    <p>Creating the Dynamic Report & Chart</p>
+                                </div>
+                             </div>`
+            },
+            {
+                title: "Part 2: Create the Dynamic Report",
+                instructions: `
+                    <p>Now that our data is perfectly structured in an Excel Table, creating an interactive report is easy.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li><strong>Add Slicers:</strong> Click inside your new table, go to the <strong>Table Design</strong> tab, and click <strong>Insert Slicer</strong>. Tick the boxes for 'Month' and 'Item'.</li>
+                        <li><strong>Insert Chart:</strong> Click inside the table again, go to the <strong>Insert</strong> tab, and choose a chart type like 'Clustered Column'.</li>
+                    </ol>
+                    <p class="mt-4">The result is a chart and slicer buttons that are linked to your data.</p>
+                `,
+                visual: 'chart'
+            }
+        ];
+
+        let currentStep = 0;
+        const stepTitleEl = document.getElementById('step-title');
+        const stepCounterEl = document.getElementById('step-counter');
+        const stepInstructionsEl = document.getElementById('step-instructions');
+        const visualDemoEl = document.getElementById('visual-demo');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        let salesChart = null;
+
+        const chartData = {
+            'Jan_Sales': [
+                { item: 'Laptops', total: 12000 },
+                { item: 'Monitors', total: 6000 }
+            ],
+            'Feb_Sales': [
+                { item: 'Monitors', total: 4350 },
+                { item: 'Keyboards', total: 2800 }
+            ],
+            'Mar_Sales': [
+                { item: 'Laptops', total: 6100 },
+                { item: 'Webcams', total: 2000 }
+            ]
+        };
+        
+        const allItems = [...new Set(Object.values(chartData).flat().map(d => d.item))];
+        const allMonths = Object.keys(chartData);
+
+        function getCombinedData() {
+            const combined = {};
+            allItems.forEach(item => combined[item] = 0);
+            
+            Object.values(chartData).flat().forEach(d => {
+                combined[d.item] += d.total;
+            });
+            return Object.values(combined);
+        }
+
+        function renderChart(month = 'All') {
+            visualDemoEl.innerHTML = `
+                <div class="w-full h-full p-4 bg-white flex flex-col md:flex-row gap-4">
+                    <div class="flex-shrink-0">
+                        <h4 class="font-semibold text-slate-700 mb-2">Filter by Month</h4>
+                        <div id="slicer-container" class="space-y-2">
+                            <button data-month="All" class="slicer-btn w-full text-left p-2 border rounded-md text-sm">All Months</button>
+                            ${allMonths.map(m => `<button data-month="${m}" class="slicer-btn w-full text-left p-2 border rounded-md text-sm">${m}</button>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            let labels, data;
+
+            if (month === 'All') {
+                labels = allItems;
+                const combined = {};
+                allItems.forEach(item => combined[item] = 0);
+                Object.values(chartData).flat().forEach(d => {
+                    combined[d.item] += d.total;
+                });
+                data = Object.values(combined);
+            } else {
+                const monthData = chartData[month];
+                labels = monthData.map(d => d.item);
+                data = monthData.map(d => d.total);
+            }
+
+            if (salesChart) {
+                salesChart.destroy();
+            }
+
+            salesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Grand Total Sales',
+                        data: data,
+                        backgroundColor: 'rgba(56, 189, 248, 0.6)', // sky-400
+                        borderColor: 'rgba(2, 132, 199, 1)', // sky-600
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + new Intl.NumberFormat().format(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: `Sales Data for ${month.replace('_', ' ')}`,
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+            
+            document.querySelectorAll('.slicer-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.month === month) {
+                    btn.classList.add('active');
+                }
+                btn.addEventListener('click', (e) => {
+                    renderChart(e.target.dataset.month);
+                });
+            });
+        }
+
+        function renderStep(stepIndex) {
+            const step = steps[stepIndex];
+            stepTitleEl.textContent = step.title;
+            stepCounterEl.textContent = `Step ${stepIndex + 1} of ${steps.length}`;
+            stepInstructionsEl.innerHTML = step.instructions;
+
+            if (step.visual === 'chart') {
+                renderChart();
+            } else {
+                if (salesChart) {
+                    salesChart.destroy();
+                    salesChart = null;
+                }
+                visualDemoEl.innerHTML = step.visual();
+            }
+
+            prevBtn.disabled = stepIndex === 0;
+            nextBtn.textContent = stepIndex === steps.length - 1 ? "Finish" : "Next";
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep(currentStep);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(currentStep);
+            } else {
+                // Reset to start
+                currentStep = 0;
+                renderStep(currentStep);
+            }
+        });
+
+        renderStep(currentStep);
+    </script>
+</body>
+</html>
