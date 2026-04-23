@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 
 export default function Car(props) {
-	const { nodes, materials } = useGLTF("../assets/car.gltf");
+	const { nodes, materials } = useGLTF(`${import.meta.env.BASE_URL}models/car/car.gltf`);
 	return (
 		<group {...props} dispose={null}>
 			<group position={[0.421, 0.322, 0.333]} rotation={[0.698, 0.08, 0]}>
@@ -348,4 +348,4 @@ export default function Car(props) {
 	);
 }
 
-useGLTF.preload("../assets/car.gltf");
+useGLTF.preload(`${import.meta.env.BASE_URL}models/car/car.gltf`);

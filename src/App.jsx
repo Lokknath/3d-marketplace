@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Route, Routes, BrowserRouter } from "react-router-dom";
+import { Route, Routes, HashRouter } from "react-router-dom";
 
 /* Lazy-load every page so Three.js / R3F modules never block MUI init */
 const LandingPage    = lazy(() => import("./pages/landing/LandingPage"));
@@ -43,7 +43,7 @@ function PageLoader() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public */}
@@ -75,7 +75,7 @@ function App() {
           <Route path="/logout" element={<LandingPage />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

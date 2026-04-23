@@ -7,7 +7,7 @@ import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function Scene(props) {
-	const { nodes, materials } = useGLTF("../src/assets/scene.gltf");
+	const { nodes, materials } = useGLTF(`${import.meta.env.BASE_URL}models/scene/scene.gltf`);
 	const navigate = useNavigate();
 	return (
 		<>
@@ -37,4 +37,4 @@ export default function Scene(props) {
 	);
 }
 
-useGLTF.preload("../src/assets/scene.gltf");
+useGLTF.preload(`${import.meta.env.BASE_URL}models/scene/scene.gltf`);
